@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Swim Points">
+  <meta name="theme-color" content="#023e8a">
+  <title>World Aquatics Points Calculator</title>
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --blue-deep:  #03045e;
+      --blue-dark:  #023e8a;
+      --blue-mid:   #0077b6;
+      --blue-light: #00b4d8;
+      --blue-pale:  #90e0ef;
+      --card-bg:    rgba(255,255,255,0.97);
+      --text-dark:  #1a1a2e;
+      --text-mid:   #555577;
+      --radius:     16px;
+      --shadow:     0 4px 24px rgba(0,0,0,0.18);
+    }
+
+    html {
+      height: -webkit-fill-available;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      background: linear-gradient(160deg, var(--blue-deep) 0%, var(--blue-mid) 100%);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      padding-bottom: calc(32px + env(safe-area-inset-bottom));
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 52px 0 28px;
+      text-align: center;
+    }
+
+    header .wave {
+      font-size: 52px;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    header h1 {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    header p {
+      color: rgba(255,255,255,0.65);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-mid);
+      margin-bottom: 11px;
+    }
+
+    /* ── Segment / toggle buttons ── */
+    .seg {
+      display: flex;
+      gap: 7px;
+    }
+
+    .seg-btn {
+      flex: 1;
+      padding: 12px 8px;
+      border: 2px solid #dde1ea;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text-mid);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .seg-btn.active {
+      background: var(--blue-mid);
+      border-color: var(--blue-mid);
+      color: #fff;
+    }
+
+    /* ── Stroke grid ── */
+    .stroke-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .stroke-grid .seg-btn:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+
+    /* ── Distance chips ── */
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      padding: 10px 18px;
+      border: 2px solid #dde1ea;
+      border-radius: 30px;
+      background: #fff;
+      color: var(--text-mid);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .chip.active {
+      background: var(--blue-mid);
+      border-color: var(--blue-mid);
+      color: #fff;
+    }
+
+    /* ── Time input ── */
+    .time-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .time-field {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .time-field input {
+      width: 76px;
+      padding: 13px 6px;
+      border: 2px solid #dde1ea;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text-dark);
+      font-family: inherit;
+      font-size: 30px;
+      font-weight: 700;
+      text-align: center;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .time-field input:focus {
+      outline: none;
+      border-color: var(--blue-mid);
+    }
+
+    .time-field span {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-mid);
+    }
+
+    .time-sep {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--text-mid);
+      padding-bottom: 20px; /* align with input vertically */
+      user-select: none;
+    }
+
+    .error-msg {
+      text-align: center;
+      color: #c0392b;
+      font-size: 13px;
+      font-weight: 500;
+      margin-top: 10px;
+      min-height: 18px;
+    }
+
+    /* ── Calculate button ── */
+    .calc-btn {
+      display: block;
+      width: 100%;
+      padding: 18px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, var(--blue-light), var(--blue-mid));
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0,119,182,0.40);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .calc-btn:active {
+      transform: scale(0.98);
+      box-shadow: 0 3px 10px rgba(0,119,182,0.35);
+    }
+
+    /* ── Result card ── */
+    .result-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 28px 20px 22px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      display: none;
+      margin-bottom: 10px;
+    }
+
+    .result-card.show { display: block; }
+
+    .points-num {
+      font-size: 80px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -3px;
+    }
+
+    .points-word {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-mid);
+      margin-top: 2px;
+    }
+
+    .level-badge {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 7px 18px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .result-meta {
+      font-size: 13px;
+      color: var(--text-mid);
+      margin-top: 14px;
+      line-height: 1.7;
+    }
+
+    /* Level colour tokens */
+    .c-wr       { color: #9a7700; }
+    .c-world    { color: var(--blue-mid); }
+    .c-national { color: #1a8a50; }
+    .c-regional { color: #c05c00; }
+    .c-club     { color: #666688; }
+
+    .b-wr       { background:#fffbea; border:2px solid #e6b800; color:#9a7700; }
+    .b-world    { background:#e8f3ff; border:2px solid var(--blue-mid); color:var(--blue-mid); }
+    .b-national { background:#eafaf1; border:2px solid #27ae60; color:#1a8a50; }
+    .b-regional { background:#fff5eb; border:2px solid #e67e22; color:#c05c00; }
+    .b-club     { background:#f3f3f7; border:2px solid #bbb; color:#666688; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      color: rgba(255,255,255,0.45);
+      font-size: 11.5px;
+      line-height: 1.8;
+      padding: 8px 0 4px;
+    }
+
+    footer a {
+      color: rgba(255,255,255,0.6);
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="wave">🏊</div>
+    <h1>World Aquatics Points</h1>
+    <p>FINA Points Calculator</p>
+  </header>
+
+  <!-- Gender -->
+  <div class="card">
+    <div class="card-label">Gender</div>
+    <div class="seg" id="genderSeg">
+      <button class="seg-btn active" data-v="M">Men</button>
+      <button class="seg-btn"        data-v="F">Women</button>
+    </div>
+  </div>
+
+  <!-- Course -->
+  <div class="card">
+    <div class="card-label">Course</div>
+    <div class="seg" id="courseSeg">
+      <button class="seg-btn active" data-v="LCM">Long Course &nbsp;(50 m)</button>
+      <button class="seg-btn"        data-v="SCM">Short Course (25 m)</button>
+    </div>
+  </div>
+
+  <!-- Stroke -->
+  <div class="card">
+    <div class="card-label">Stroke</div>
+    <div class="stroke-grid" id="strokeSeg">
+      <button class="seg-btn active" data-v="Free">Freestyle</button>
+      <button class="seg-btn"        data-v="Back">Backstroke</button>
+      <button class="seg-btn"        data-v="Breast">Breaststroke</button>
+      <button class="seg-btn"        data-v="Fly">Butterfly</button>
+      <button class="seg-btn"        data-v="IM">Ind. Medley</button>
+    </div>
+  </div>
+
+  <!-- Distance -->
+  <div class="card">
+    <div class="card-label">Distance</div>
+    <div class="chip-row" id="distRow"></div>
+  </div>
+
+  <!-- Time -->
+  <div class="card">
+    <div class="card-label">Your Time</div>
+    <div class="time-row">
+      <div class="time-field">
+        <input type="number" id="tMin" min="0" max="59" placeholder="0" inputmode="numeric">
+        <span>min</span>
+      </div>
+      <div class="time-sep">:</div>
+      <div class="time-field">
+        <input type="number" id="tSec" min="0" max="59" placeholder="00" inputmode="numeric">
+        <span>sec</span>
+      </div>
+      <div class="time-sep">.</div>
+      <div class="time-field">
+        <input type="number" id="tHun" min="0" max="99" placeholder="00" inputmode="numeric">
+        <span>1/100</span>
+      </div>
+    </div>
+    <div class="error-msg" id="errMsg"></div>
+  </div>
+
+  <button class="calc-btn" id="calcBtn">Calculate Points</button>
+
+  <!-- Result -->
+  <div class="result-card" id="resultCard">
+    <div class="points-num" id="ptsNum"></div>
+    <div class="points-word">points</div>
+    <div class="level-badge" id="lvlBadge"></div>
+    <div class="result-meta" id="resMeta"></div>
+  </div>
+
+  <footer>
+    <p>Formula: Points = 1000 × (Base Time ÷ Your Time)³</p>
+    <p>Base times = World Records (approx. 2024–25)</p>
+    <p>Always verify at <a href="https://worldaquatics.com" target="_blank">worldaquatics.com</a></p>
+  </footer>
+
+</div><!-- /.app -->
+
+<script>
+// ─────────────────────────────────────────────
+//  World Records in decimal seconds
+//  Sources: World Aquatics, approx. as of 2024-25
+//  LCM = Long Course Meters (50 m pool)
+//  SCM = Short Course Meters (25 m pool)
+// ─────────────────────────────────────────────
+const WR = {
+  M: {
+    LCM: {
+      '50 Free':   20.91,   // Cielo 2009
+      '100 Free':  46.40,   // Pan Zhanle 2024
+      '200 Free': 102.00,   // Biedermann 2009
+      '400 Free': 220.07,   // Biedermann 2009
+      '800 Free': 452.12,   // Zhang Lin 2009
+      '1500 Free':871.02,   // Sun Yang 2012
+      '50 Back':   24.00,   // Hunter Armstrong 2022
+      '100 Back':  51.60,   // Ceccon 2022
+      '200 Back': 111.92,   // Peirsol 2009
+      '50 Breast': 25.95,   // Peaty 2017
+      '100 Breast':56.88,   // Peaty 2019
+      '200 Breast':125.95,  // Qin Haiyang 2023
+      '50 Fly':    22.27,   // Dressel 2021
+      '100 Fly':   49.45,   // Dressel 2021
+      '200 Fly':  110.73,   // Milák 2022
+      '200 IM':   114.00,   // Lochte 2011
+      '400 IM':   242.50,   // Marchand 2023
+    },
+    SCM: {
+      '50 Free':   20.16,   // Manaudou 2014
+      '100 Free':  44.84,   // Dressel 2020
+      '200 Free': 100.91,   // Biedermann 2009
+      '400 Free': 212.61,
+      '800 Free': 443.67,
+      '1500 Free':853.96,
+      '50 Back':   22.22,   // Kolesnikov 2021
+      '100 Back':  48.33,   // Kolesnikov 2019
+      '200 Back': 105.63,   // Mitchell Larkin 2015
+      '50 Breast': 25.25,   // Van der Burgh 2009
+      '100 Breast':55.28,   // Peaty 2022
+      '200 Breast':120.16,  // Qin Haiyang 2023
+      '50 Fly':    21.75,   // Govorov 2018
+      '100 Fly':   47.52,   // Dressel 2020
+      '200 Fly':  107.80,   // Milák 2021
+      '100 IM':    49.28,   // Dressel 2020
+      '200 IM':   109.63,   // Lochte 2012
+      '400 IM':   234.81,   // Marchand 2023
+    },
+  },
+  F: {
+    LCM: {
+      '50 Free':   23.67,   // Sjöström 2017
+      '100 Free':  51.71,   // Sjöström 2017
+      '200 Free': 112.98,   // Pellegrini 2009
+      '400 Free': 236.40,   // Ledecky 2016
+      '800 Free': 484.79,   // Ledecky 2016
+      '1500 Free':920.48,   // Ledecky 2018
+      '50 Back':   27.06,   // Liu Xiang 2018
+      '100 Back':  57.33,   // McKeown 2021
+      '200 Back': 123.35,   // McKeown 2022
+      '50 Breast': 29.30,   // Pilato 2022
+      '100 Breast':64.13,   // King 2017
+      '200 Breast':138.95,  // Schoenmaker 2021
+      '50 Fly':    24.43,   // Sjöström 2014
+      '100 Fly':   55.48,   // Sjöström 2016
+      '200 Fly':  121.81,   // Liu Zige 2009
+      '200 IM':   126.12,   // Hosszú 2016
+      '400 IM':   266.36,   // Hosszú 2016
+    },
+    SCM: {
+      '50 Free':   22.93,   // Sjöström 2017
+      '100 Free':  50.25,   // Sjöström 2019
+      '200 Free': 110.31,
+      '400 Free': 230.87,
+      '800 Free': 474.00,
+      '1500 Free':901.74,
+      '50 Back':   26.38,   // Liu Xiang 2018
+      '100 Back':  55.03,   // McKeown 2022
+      '200 Back': 119.50,
+      '50 Breast': 28.56,   // Meilutytė 2020
+      '100 Breast':61.76,   // Meilutytė 2020
+      '200 Breast':133.01,
+      '50 Fly':    24.38,   // Sjöström 2014
+      '100 Fly':   54.17,   // Sjöström 2017
+      '200 Fly':  118.75,
+      '100 IM':    56.51,   // Sjöström 2019
+      '200 IM':   123.97,   // Hosszú 2017
+      '400 IM':   258.94,   // Hosszú 2016
+    },
+  },
+};
+
+// Distances available per stroke & course
+const DISTS = {
+  Free:  { LCM: [50,100,200,400,800,1500], SCM: [50,100,200,400,800,1500] },
+  Back:  { LCM: [50,100,200],              SCM: [50,100,200] },
+  Breast:{ LCM: [50,100,200],              SCM: [50,100,200] },
+  Fly:   { LCM: [50,100,200],              SCM: [50,100,200] },
+  IM:    { LCM: [200,400],                 SCM: [100,200,400] },
+};
+
+// Stroke label for WR key
+const STROKE_KEY = { Free:'Free', Back:'Back', Breast:'Breast', Fly:'Fly', IM:'IM' };
+
+const STROKE_LABEL = {
+  Free:'Freestyle', Back:'Backstroke', Breast:'Breaststroke',
+  Fly:'Butterfly',  IM:'Individual Medley',
+};
+
+// ── App state ──────────────────────────────────
+const state = { gender:'M', course:'LCM', stroke:'Free', dist:'100' };
+
+// ── Helpers ───────────────────────────────────
+function fmtTime(s) {
+  const m   = Math.floor(s / 60);
+  const rem = s - m * 60;
+  const ss  = Math.floor(rem);
+  const hh  = Math.round((rem - ss) * 100);
+  if (m > 0) return `${m}:${pad(ss)}.${pad(hh)}`;
+  return `${ss}.${pad(hh)}`;
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+
+function levelInfo(pts) {
+  if (pts >= 1000) return { text:'World Record Level',         num:'c-wr',       badge:'b-wr' };
+  if (pts >= 900)  return { text:'Olympic / World-Class',      num:'c-world',    badge:'b-world' };
+  if (pts >= 800)  return { text:'National Elite',             num:'c-national', badge:'b-national' };
+  if (pts >= 700)  return { text:'Regional / State Level',     num:'c-regional', badge:'b-regional' };
+  if (pts >= 500)  return { text:'Competitive Club Level',     num:'c-club',     badge:'b-club' };
+  return               { text:'Recreational',                  num:'c-club',     badge:'b-club' };
+}
+
+// ── Segment / chip wiring ──────────────────────
+function wireSegment(id, stateKey, onPick) {
+  document.getElementById(id).addEventListener('click', e => {
+    const btn = e.target.closest('[data-v]');
+    if (!btn) return;
+    state[stateKey] = btn.dataset.v;
+    btn.closest('.seg, .stroke-grid')
+       .querySelectorAll('[data-v]')
+       .forEach(b => b.classList.toggle('active', b === btn));
+    onPick();
+  });
+}
+
+wireSegment('genderSeg', 'gender', () => { refreshDists(); clearResult(); });
+wireSegment('courseSeg', 'course', () => { refreshDists(); clearResult(); });
+wireSegment('strokeSeg', 'stroke', () => { refreshDists(); clearResult(); });
+
+function refreshDists() {
+  const available = DISTS[state.stroke][state.course];
+  // Keep current distance if still valid, else pick first
+  if (!available.includes(parseInt(state.dist))) {
+    state.dist = String(available[0]);
+  }
+
+  const row = document.getElementById('distRow');
+  row.innerHTML = '';
+  available.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (String(d) === state.dist ? ' active' : '');
+    btn.textContent = d + ' m';
+    btn.addEventListener('click', () => {
+      state.dist = String(d);
+      row.querySelectorAll('.chip').forEach(b => b.classList.toggle('active', b === btn));
+      clearResult();
+    });
+    row.appendChild(btn);
+  });
+}
+
+// ── Calculate ────────────────────────────────
+document.getElementById('calcBtn').addEventListener('click', calculate);
+// Also allow Enter key in time fields
+['tMin','tSec','tHun'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') calculate();
+  });
+});
+
+function calculate() {
+  const errEl = document.getElementById('errMsg');
+  errEl.textContent = '';
+
+  const min = parseInt(document.getElementById('tMin').value) || 0;
+  const sec = parseInt(document.getElementById('tSec').value) || 0;
+  const hun = parseInt(document.getElementById('tHun').value) || 0;
+
+  if (sec >= 60) { errEl.textContent = 'Seconds must be 0–59.'; return; }
+  if (hun >= 100){ errEl.textContent = 'Hundredths must be 0–99.'; return; }
+
+  const T = min * 60 + sec + hun / 100;
+  if (T <= 0) { errEl.textContent = 'Please enter a time.'; return; }
+
+  const key = `${state.dist} ${STROKE_KEY[state.stroke]}`;
+  const B   = WR[state.gender][state.course][key];
+  if (!B) { errEl.textContent = 'No base time found for this event.'; return; }
+
+  const pts   = Math.max(0, Math.round(1000 * Math.pow(B / T, 3)));
+  const level = levelInfo(pts);
+  const gLbl  = state.gender === 'M' ? "Men's" : "Women's";
+  const cLbl  = state.course === 'LCM' ? 'LCM (50 m)' : 'SCM (25 m)';
+
+  document.getElementById('ptsNum').textContent    = pts;
+  document.getElementById('ptsNum').className      = 'points-num ' + level.num;
+  document.getElementById('lvlBadge').textContent  = level.text;
+  document.getElementById('lvlBadge').className    = 'level-badge ' + level.badge;
+  document.getElementById('resMeta').innerHTML     =
+    `${gLbl} ${state.dist} m ${STROKE_LABEL[state.stroke]} &mdash; ${cLbl}<br>` +
+    `Your time: <strong>${fmtTime(T)}</strong><br>` +
+    `Base time (WR): ${fmtTime(B)}`;
+
+  const card = document.getElementById('resultCard');
+  card.classList.add('show');
+  card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function clearResult() {
+  document.getElementById('resultCard').classList.remove('show');
+  document.getElementById('errMsg').textContent = '';
+}
+
+// ── Init ─────────────────────────────────────
+refreshDists();
+</script>
+</body>
+</html>
