@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#050e1a" />
+  <title>Swim Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #050e1a;
+      --bg2: #081828;
+      --bg3: #0d2540;
+      --border: #1a3d5c;
+      --border2: #0d2540;
+      --accent: #0ea5e9;
+      --accent2: #7dd3fc;
+      --text: #e8f4fd;
+      --muted: #4a7fa0;
+      --muted2: #2a5f7a;
+      --easy: #4ade80;
+      --moderate: #facc15;
+      --hard: #f97316;
+      --race: #ef4444;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', 'Courier New', monospace;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Layout ── */
+    .app { display: flex; flex-direction: column; min-height: 100vh; }
+
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: linear-gradient(180deg, #050e1aee 80%, transparent);
+      backdrop-filter: blur(10px);
+      padding: 20px 20px 12px;
+      border-bottom: 1px solid var(--border2);
+    }
+    .header-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 2px; }
+    .header h1 { font-family: 'Bebas Neue', sans-serif; font-size: 38px; letter-spacing: 3px; color: var(--accent2); }
+    .header h1 span { color: var(--text); }
+    .header-sub { font-size: 10px; letter-spacing: 2.5px; color: var(--muted); }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 8px; padding: 12px 20px;
+      border-bottom: 1px solid var(--border2);
+      background: var(--bg2);
+    }
+    .stat { text-align: center; }
+    .stat-label { font-size: 9px; letter-spacing: 2px; color: var(--muted); margin-bottom: 2px; }
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      display: flex; gap: 0;
+      border-bottom: 1px solid var(--border2);
+      background: var(--bg2);
+    }
+    .nav-btn {
+      flex: 1; padding: 13px 8px; font-family: inherit; font-size: 11px;
+      letter-spacing: 1.5px; text-align: center; cursor: pointer;
+      border: none; background: none; color: var(--muted);
+      border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    .nav-btn.active { color: var(--text); border-bottom-color: var(--accent); }
+    .nav-btn:hover:not(.active) { color: var(--accent2); }
+
+    /* ── Content ── */
+    .content { flex: 1; padding: 20px; max-width: 640px; margin: 0 auto; width: 100%; }
+
+    /* ── Cards ── */
+    .card {
+      background: linear-gradient(135deg, #081828, #0a1e35);
+      border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* ── Form ── */
+    .form-grid { display: grid; gap: 16px; padding: 20px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-row-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+    .field-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); margin-bottom: 6px; }
+
+    input, select, textarea {
+      width: 100%; background: #061220; border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-family: inherit;
+      font-size: 13px; padding: 11px 14px; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none; appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px #0ea5e915;
+    }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a7fa0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+    select option { background: #061220; }
+    textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+
+    .intensity-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .intensity-opt { display: none; }
+    .intensity-opt + label {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 10px 6px; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--border); font-size: 10px; letter-spacing: 1px;
+      color: var(--muted); transition: all 0.15s; text-align: center;
+    }
+    .intensity-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .intensity-opt:checked + label { color: var(--text); border-color: currentColor; background: #0ea5e910; }
+    .intensity-opt[value="Easy"]:checked + label { color: var(--easy); border-color: var(--easy); }
+    .intensity-opt[value="Moderate"]:checked + label { color: var(--moderate); border-color: var(--moderate); }
+    .intensity-opt[value="Hard"]:checked + label { color: var(--hard); border-color: var(--hard); }
+    .intensity-opt[value="Race Pace"]:checked + label { color: var(--race); border-color: var(--race); }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; cursor: pointer; border: none; border-radius: 8px;
+      font-family: inherit; font-weight: 500; transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-primary {
+      width: 100%; padding: 14px; font-size: 13px; letter-spacing: 2px;
+      background: linear-gradient(135deg, var(--accent), #0284c7);
+      color: #fff;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px #0ea5e930; }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.35; pointer-events: none; }
+
+    .btn-sm {
+      padding: 7px 14px; font-size: 11px; letter-spacing: 1px;
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-sm:hover { border-color: var(--accent); color: var(--accent2); }
+    .btn-sm.active { border-color: var(--accent); color: var(--text); background: #0ea5e912; }
+
+    /* ── Success ── */
+    .saved-msg {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; padding: 20px;
+      background: #052e16; color: #4ade80;
+      border: 1px solid #166534; border-radius: 10px;
+      font-size: 13px; letter-spacing: 2px;
+      animation: fadeUp 0.3s ease;
+    }
+
+    /* ── History ── */
+    .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+
+    .lane-line {
+      height: 2px; margin: 0;
+      background: repeating-linear-gradient(90deg, var(--accent) 0, var(--accent) 18px, transparent 18px, transparent 26px);
+      opacity: 0.15;
+    }
+
+    .session-item {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border2);
+      transition: background 0.15s;
+      position: relative;
+    }
+    .session-item:last-child { border-bottom: none; }
+    .session-item:hover { background: #0d253a33; }
+
+    .session-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .session-left { flex: 1; min-width: 0; }
+    .session-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    .session-dist {
+      font-family: 'Bebas Neue', sans-serif; font-size: 26px;
+      letter-spacing: 1px; color: var(--accent2); line-height: 1;
+    }
+    .session-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 10px; letter-spacing: 0.8px;
+      border: 1px solid currentColor;
+    }
+    .session-date { font-size: 11px; color: var(--muted2); }
+    .session-notes { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 6px; line-height: 1.5; }
+
+    .delete-btn {
+      opacity: 0; transition: opacity 0.2s;
+      cursor: pointer; color: var(--race); background: none; border: none;
+      font-size: 14px; padding: 4px 8px; border-radius: 4px;
+      font-family: inherit;
+    }
+    .session-item:hover .delete-btn { opacity: 1; }
+
+    /* ── Empty state ── */
+    .empty {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 12px; padding: 56px 20px;
+      text-align: center;
+    }
+    .empty-icon { font-size: 52px; opacity: 0.25; }
+    .empty-title { color: var(--muted); font-size: 13px; letter-spacing: 2px; }
+    .empty-sub { color: var(--muted2); font-size: 11px; }
+
+    /* ── Export ── */
+    .export-bar {
+      display: flex; justify-content: flex-end; margin-bottom: 14px;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeUp 0.3s ease forwards; }
+
+    /* ── Mobile ── */
+    @media (max-width: 480px) {
+      .header h1 { font-size: 32px; }
+      .stat-value { font-size: 22px; }
+      .form-row, .form-row-3 { grid-template-columns: 1fr; }
+      .intensity-grid { grid-template-columns: repeat(2, 1fr); }
+      .session-dist { font-size: 22px; }
+      .delete-btn { opacity: 1; }
+    }
+
+    /* ── Install banner (PWA) ── */
+    #install-banner {
+      display: none; align-items: center; justify-content: space-between;
+      padding: 10px 20px; background: #0a2a4a; border-bottom: 1px solid var(--border);
+      font-size: 12px; color: var(--muted);
+    }
+    #install-banner.show { display: flex; }
+    #install-btn {
+      padding: 6px 14px; border-radius: 6px; font-family: inherit;
+      font-size: 11px; letter-spacing: 1px;
+      background: var(--accent); color: #fff; border: none; cursor: pointer;
+    }
+    #dismiss-install { cursor: pointer; color: var(--muted2); background: none; border: none; font-size: 18px; padding: 0 4px; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- PWA Install Banner -->
+  <div id="install-banner">
+    <span>📲 Add to Home Screen for app-like access</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button id="install-btn">Install</button>
+      <button id="dismiss-install">×</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <h1>SWIM <span>LOG</span></h1>
+    </div>
+    <div class="header-sub">TRAINING SESSION TRACKER</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar" id="stats-bar" style="display:none">
+    <div class="stat">
+      <div class="stat-label">SESSIONS</div>
+      <div class="stat-value" id="stat-count">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">TOTAL DIST</div>
+      <div class="stat-value" id="stat-dist">0m</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">AVG TIME</div>
+      <div class="stat-value" id="stat-avg">—</div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showView('history')" id="nav-history">◈ HISTORY</button>
+    <button class="nav-btn" onclick="showView('log')" id="nav-log">+ LOG SESSION</button>
+  </nav>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- History View -->
+    <div id="view-history" class="fade-in">
+      <div class="filter-bar" id="filter-bar"></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;" id="export-bar"></div>
+      <div class="card" id="session-list-card">
+        <div class="lane-line"></div>
+        <div id="session-list"></div>
+        <div class="lane-line"></div>
+      </div>
+      <div id="session-count" style="text-align:center;margin-top:10px;font-size:10px;letter-spacing:2px;color:var(--muted2);"></div>
+    </div>
+
+    <!-- Log View -->
+    <div id="view-log" style="display:none">
+      <div class="card fade-in">
+        <div class="form-grid">
+          <div class="form-row">
+            <div>
+              <div class="field-label">DATE</div>
+              <input type="date" id="f-date" />
+            </div>
+            <div>
+              <div class="field-label">DURATION (mins)</div>
+              <input type="number" id="f-duration" placeholder="e.g. 45" min="1" />
+            </div>
+          </div>
+          <div class="form-row-3">
+            <div>
+              <div class="field-label">DISTANCE</div>
+              <input type="number" id="f-distance" placeholder="e.g. 2000" min="0" step="any" />
+            </div>
+            <div>
+              <div class="field-label">UNIT</div>
+              <select id="f-unit">
+                <option value="m">metres</option>
+                <option value="km">km</option>
+                <option value="mi">miles</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <div class="field-label">STROKE</div>
+            <select id="f-stroke">
+              <option>Freestyle</option>
+              <option>Backstroke</option>
+              <option>Breaststroke</option>
+              <option>Butterfly</option>
+              <option>IM</option>
+              <option>Open Water</option>
+            </select>
+          </div>
+          <div>
+            <div class="field-label">INTENSITY</div>
+            <div class="intensity-grid">
+              <div><input type="radio" name="intensity" class="intensity-opt" id="i-easy" value="Easy" checked /><label for="i-easy"><span class="intensity-dot" style="background:#4ade80"></span>EASY</label></div>
+              <div><input type="radio" name="intensity" class="intensity-opt" id="i-mod" value="Moderate" /><label for="i-mod"><span class="intensity-dot" style="background:#facc15"></span>MODERATE</label></div>
+              <div><input type="radio" name="intensity" class="intensity-opt" id="i-hard" value="Hard" /><label for="i-hard"><span class="intensity-dot" style="background:#f97316"></span>HARD</label></div>
+              <div><input type="radio" name="intensity" class="intensity-opt" id="i-race" value="Race Pace" /><label for="i-race"><span class="intensity-dot" style="background:#ef4444"></span>RACE</label></div>
+            </div>
+          </div>
+          <div>
+            <div class="field-label">NOTES (optional)</div>
+            <textarea id="f-notes" placeholder="e.g. focused on turns, felt strong on back half…"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="saveSession()" id="save-btn" disabled>SAVE SESSION</button>
+          <div id="save-msg" style="display:none" class="saved-msg">✓ SESSION SAVED</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const STORAGE_KEY = 'swimlog_sessions';
+  const STROKE_ICONS = { Freestyle:'〜', Backstroke:'⟵', Breaststroke:'❋', Butterfly:'⌇', IM:'✦', 'Open Water':'◎' };
+  const INTENSITY_COLORS = { Easy:'#4ade80', Moderate:'#facc15', Hard:'#f97316', 'Race Pace':'#ef4444' };
+  const STROKES = ['Freestyle','Backstroke','Breaststroke','Butterfly','IM','Open Water'];
+
+  let sessions = [];
+  let activeFilter = 'All';
+  let deferredPrompt = null;
+
+  // ── Storage ──
+  function load() {
+    try { sessions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { sessions = []; }
+  }
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+  }
+
+  // ── Init ──
+  document.addEventListener('DOMContentLoaded', () => {
+    load();
+    // Set today's date
+    document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+    // Form validation
+    ['f-distance','f-duration'].forEach(id => {
+      document.getElementById(id).addEventListener('input', validateForm);
+    });
+    renderHistory();
+    updateStats();
+  });
+
+  function validateForm() {
+    const d = document.getElementById('f-distance').value;
+    const t = document.getElementById('f-duration').value;
+    document.getElementById('save-btn').disabled = !(d && t && parseFloat(d) > 0 && parseFloat(t) > 0);
+  }
+
+  // ── Views ──
+  function showView(v) {
+    document.getElementById('view-history').style.display = v==='history' ? '' : 'none';
+    document.getElementById('view-log').style.display = v==='log' ? '' : 'none';
+    document.getElementById('nav-history').className = 'nav-btn' + (v==='history'?' active':'');
+    document.getElementById('nav-log').className = 'nav-btn' + (v==='log'?' active':'');
+  }
+
+  // ── Save ──
+  function saveSession() {
+    const session = {
+      id: Date.now(),
+      date: document.getElementById('f-date').value,
+      distance: document.getElementById('f-distance').value,
+      unit: document.getElementById('f-unit').value,
+      duration: document.getElementById('f-duration').value,
+      stroke: document.getElementById('f-stroke').value,
+      intensity: document.querySelector('input[name="intensity"]:checked').value,
+      notes: document.getElementById('f-notes').value.trim(),
+    };
+    sessions.unshift(session);
+    save();
+    // Reset form
+    document.getElementById('f-distance').value = '';
+    document.getElementById('f-duration').value = '';
+    document.getElementById('f-notes').value = '';
+    document.getElementById('i-easy').checked = true;
+    document.getElementById('save-btn').disabled = true;
+    document.getElementById('save-msg').style.display = 'flex';
+    setTimeout(() => {
+      document.getElementById('save-msg').style.display = 'none';
+      showView('history');
+      renderHistory();
+      updateStats();
+    }, 1400);
+  }
+
+  // ── Delete ──
+  function deleteSession(id) {
+    if (!confirm('Delete this session?')) return;
+    sessions = sessions.filter(s => s.id !== id);
+    save();
+    renderHistory();
+    updateStats();
+  }
+
+  // ── Stats ──
+  function updateStats() {
+    const bar = document.getElementById('stats-bar');
+    if (!sessions.length) { bar.style.display = 'none'; return; }
+    bar.style.display = 'grid';
+    document.getElementById('stat-count').textContent = sessions.length;
+    const totalM = sessions.reduce((a,s) => {
+      const d = parseFloat(s.distance) || 0;
+      return a + (s.unit==='km' ? d*1000 : s.unit==='mi' ? d*1609.34 : d);
+    }, 0);
+    document.getElementById('stat-dist').textContent = totalM >= 1000
+      ? (totalM/1000).toFixed(1)+'km' : Math.round(totalM)+'m';
+    const avgMins = Math.round(sessions.reduce((a,s) => a+(parseInt(s.duration)||0), 0) / sessions.length);
+    document.getElementById('stat-avg').textContent = avgMins < 60 ? avgMins+'m'
+      : Math.floor(avgMins/60)+'h'+(avgMins%60?(' '+(avgMins%60)+'m'):'');
+  }
+
+  // ── Render History ──
+  function renderHistory() {
+    // Filters
+    const fb = document.getElementById('filter-bar');
+    fb.innerHTML = '';
+    ['All',...STROKES].forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-sm' + (activeFilter===s?' active':'');
+      btn.textContent = s==='All' ? 'ALL' : (STROKE_ICONS[s]+' '+s.toUpperCase());
+      btn.onclick = () => { activeFilter = s; renderHistory(); };
+      fb.appendChild(btn);
+    });
+
+    // Export button
+    const eb = document.getElementById('export-bar');
+    eb.innerHTML = '';
+    if (sessions.length) {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-sm';
+      btn.textContent = '↓ EXPORT CSV';
+      btn.onclick = exportCSV;
+      eb.appendChild(btn);
+    }
+
+    // List
+    const list = document.getElementById('session-list');
+    list.innerHTML = '';
+    const filtered = activeFilter==='All' ? sessions : sessions.filter(s=>s.stroke===activeFilter);
+
+    if (!sessions.length) {
+      list.innerHTML = `<div class="empty">
+        <div class="empty-icon">🏊</div>
+        <div class="empty-title">NO SESSIONS YET</div>
+        <div class="empty-sub">Log your first swim to get started</div>
+        <button class="btn btn-primary" onclick="showView('log')" style="width:auto;padding:11px 24px;margin-top:8px;font-size:12px;letter-spacing:2px">+ LOG SESSION</button>
+      </div>`;
+    } else if (!filtered.length) {
+      list.innerHTML = `<div class="empty"><div class="empty-title">NO ${activeFilter.toUpperCase()} SESSIONS</div></div>`;
+    } else {
+      filtered.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'session-item';
+        const date = new Date(s.date+'T00:00:00');
+        const dateStr = date.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+        const dur = parseInt(s.duration)||0;
+        const durStr = dur<60 ? dur+'m' : Math.floor(dur/60)+'h'+(dur%60?' '+(dur%60)+'m':'');
+        const iColor = INTENSITY_COLORS[s.intensity]||'#888';
+        div.innerHTML = `
+          <div class="session-top">
+            <div class="session-left">
+              <div class="session-dist">${s.distance}${s.unit}</div>
+              <div class="session-meta">
+                <span style="color:var(--muted);font-size:13px">${durStr}</span>
+                <span class="pill" style="color:${iColor};border-color:${iColor}66">${s.intensity.toUpperCase()}</span>
+                <span class="pill" style="color:var(--accent2);border-color:var(--border)">${STROKE_ICONS[s.stroke]||''} ${s.stroke.toUpperCase()}</span>
+              </div>
+              ${s.notes ? `<div class="session-notes">${escHtml(s.notes)}</div>` : ''}
+            </div>
+            <div class="session-right">
+              <span class="session-date">${dateStr}</span>
+              <button class="delete-btn" onclick="deleteSession(${s.id})" title="Delete">✕</button>
+            </div>
+          </div>`;
+        list.appendChild(div);
+      });
+    }
+
+    document.getElementById('session-count').textContent =
+      filtered.length ? `${filtered.length} SESSION${filtered.length!==1?'S':''} SHOWN` : '';
+  }
+
+  // ── Export ──
+  function exportCSV() {
+    const header = 'Date,Distance,Unit,Duration (mins),Stroke,Intensity,Notes\n';
+    const rows = sessions.map(s =>
+      [s.date, s.distance, s.unit, s.duration, s.stroke, s.intensity, '"'+(s.notes||'').replace(/"/g,'""')+'"'].join(',')
+    ).join('\n');
+    const blob = new Blob([header+rows], {type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'swim-log-export.csv';
+    a.click();
+  }
+
+  function escHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── PWA Install ──
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferredPrompt = e;
+    document.getElementById('install-banner').classList.add('show');
+  });
+  document.getElementById('install-btn').addEventListener('click', () => {
+    if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+    document.getElementById('install-banner').classList.remove('show');
+  });
+  document.getElementById('dismiss-install').addEventListener('click', () => {
+    document.getElementById('install-banner').classList.remove('show');
+  });
+</script>
+</body>
+</html>
