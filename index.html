@@ -399,92 +399,92 @@
 
 <script>
 // ─────────────────────────────────────────────
-//  Base times in decimal seconds
-//  LCM 2026: World Records as of 31 Dec 2025
-//  SCM 2025: World Records as of 31 Aug 2025
-//  Source: World Aquatics official points tables
+//  Official World Aquatics base times (seconds)
+//  LCM 2026: valid 01.01.2026 – 31.12.2026
+//  SCM 2025: valid 01.09.2025 – 31.08.2026
+//  Source: World Aquatics Points Base Times PDF
 // ─────────────────────────────────────────────
 const WR = {
   M: {
     LCM: {
-      '50 Free':   20.91,   // Cielo 2009
-      '100 Free':  46.40,   // Pan Zhanle 2024
-      '200 Free': 102.00,   // Biedermann 2009
-      '400 Free': 219.96,   // Märtens 2025
-      '800 Free': 452.12,   // Zhang Lin 2009
-      '1500 Free':871.02,   // Sun Yang 2012
-      '50 Back':   23.71,   // Armstrong 2022
-      '100 Back':  51.60,   // Ceccon 2022
-      '200 Back': 111.92,   // Peirsol 2009
-      '50 Breast': 25.95,   // Peaty 2017
-      '100 Breast':56.88,   // Peaty 2019
-      '200 Breast':125.48,  // Qin Haiyang 2023
-      '50 Fly':    22.27,   // Dressel 2021
-      '100 Fly':   49.45,   // Dressel 2021
-      '200 Fly':  110.73,   // Milák 2022
-      '200 IM':   112.69,   // Marchand 2025
-      '400 IM':   242.50,   // Marchand 2023
+      '50 Free':   20.91,
+      '100 Free':  46.40,
+      '200 Free': 102.00,
+      '400 Free': 219.96,
+      '800 Free': 452.12,
+      '1500 Free':870.67,
+      '50 Back':   23.55,
+      '100 Back':  51.60,
+      '200 Back': 111.92,
+      '50 Breast': 25.95,
+      '100 Breast':56.88,
+      '200 Breast':125.48,
+      '50 Fly':    22.27,
+      '100 Fly':   49.45,
+      '200 Fly':  110.34,
+      '200 IM':   112.69,
+      '400 IM':   242.50,
     },
     SCM: {
-      '50 Free':   20.16,   // Manaudou 2014
-      '100 Free':  44.84,   // Dressel 2020
-      '200 Free': 100.91,   // Biedermann 2009
-      '400 Free': 212.61,
-      '800 Free': 443.67,
-      '1500 Free':853.96,
-      '50 Back':   22.22,   // Kolesnikov 2021
-      '100 Back':  48.33,   // Kolesnikov 2019
-      '200 Back': 105.63,   // Mitchell Larkin 2015
-      '50 Breast': 25.25,   // Van der Burgh 2009
-      '100 Breast':55.28,   // Peaty 2022
-      '200 Breast':120.16,  // Qin Haiyang 2023
-      '50 Fly':    21.75,   // Govorov 2018
-      '100 Fly':   47.52,   // Dressel 2020
-      '200 Fly':  107.80,   // Milák 2021
-      '100 IM':    49.28,   // Dressel 2020
-      '200 IM':   109.63,   // Lochte 2012
-      '400 IM':   234.81,   // Marchand 2023
+      '50 Free':   19.90,
+      '100 Free':  44.84,
+      '200 Free':  98.61,
+      '400 Free': 212.25,
+      '800 Free': 440.46,
+      '1500 Free':846.88,
+      '50 Back':   22.11,
+      '100 Back':  48.33,
+      '200 Back': 105.63,
+      '50 Breast': 24.95,
+      '100 Breast':55.28,
+      '200 Breast':120.16,
+      '50 Fly':    21.32,
+      '100 Fly':   47.71,
+      '200 Fly':  106.85,
+      '100 IM':    49.28,
+      '200 IM':   108.88,
+      '400 IM':   234.81,
     },
   },
   F: {
     LCM: {
-      '50 Free':   23.61,   // Sjöström 2023
-      '100 Free':  51.71,   // Sjöström 2017
-      '200 Free': 112.98,   // Pellegrini 2009
-      '400 Free': 236.40,   // Ledecky 2016
-      '800 Free': 484.79,   // Ledecky 2016
-      '1500 Free':920.48,   // Ledecky 2018
-      '50 Back':   27.06,   // Liu Xiang 2018
-      '100 Back':  57.13,   // Regan Smith 2025
-      '200 Back': 123.35,   // McKeown 2022
-      '50 Breast': 29.30,   // Pilato 2022
-      '100 Breast':64.13,   // King 2017
-      '200 Breast':137.55,  // Chikunova 2024
-      '50 Fly':    24.43,   // Sjöström 2014
-      '100 Fly':   54.60,   // Walsh 2025
-      '200 Fly':  121.81,   // Liu Zige 2009
-      '200 IM':   125.70,   // McIntosh 2025
-      '400 IM':   263.65,   // McIntosh 2025
+      '50 Free':   23.61,
+      '100 Free':  51.71,
+      '200 Free': 112.23,
+      '400 Free': 234.18,
+      '800 Free': 484.12,
+      '1500 Free':920.48,
+      '50 Back':   26.86,
+      '100 Back':  57.13,
+      '200 Back': 123.14,
+      '50 Breast': 29.16,
+      '100 Breast':64.13,
+      '200 Breast':137.55,
+      '50 Fly':    24.43,
+      '100 Fly':   54.60,
+      '200 Fly':  121.81,
+      '200 IM':   125.70,
+      '400 IM':   263.65,
     },
     SCM: {
-      '50 Free':   22.93,   // Sjöström 2017
-      '100 Free':  50.25,   // Sjöström 2019
+      '50 Free':   22.83,
+      '100 Free':  50.25,
       '200 Free': 110.31,
-      '400 Free': 230.87,
-      '800 Free': 474.00,
-      '1500 Free':901.74,
-      '50 Back':   26.38,   // Liu Xiang 2018
-      '100 Back':  55.03,   // McKeown 2022
-      '200 Back': 119.50,
-      '50 Breast': 28.56,   // Meilutytė 2020
-      '100 Breast':61.76,   // Meilutytė 2020
-      '200 Breast':133.01,
-      '50 Fly':    24.38,   // Sjöström 2014
-      '100 Fly':   52.71,   // Walsh 2024 SC Worlds
-      '200 Fly':  118.75,
-      '100 IM':    56.51,   // Sjöström 2019
-      '200 IM':   123.97,   // Hosszú 2017
-      '400 IM':   258.94,   // Hosszú 2016
+      '400 Free': 230.25,
+      '800 Free': 477.42,
+      '1500 Free':908.24,
+      '50 Back':   25.23,
+      '100 Back':  54.02,
+      '200 Back': 118.04,
+      '50 Breast': 28.37,
+      '100 Breast':62.36,
+      '200 Breast':132.50,
+      '50 Fly':    23.94,
+      '100 Fly':   52.71,
+      '200 Fly':  119.32,
+      '100 IM':    55.11,
+      '200 IM':   121.63,
+      '400 IM':   255.48,
     },
   },
 };
