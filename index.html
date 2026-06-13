@@ -297,6 +297,52 @@
     .b-regional { background:#fff5eb; border:2px solid #e67e22; color:#c05c00; }
     .b-club     { background:#f3f3f7; border:2px solid #bbb; color:#666688; }
 
+    /* ── Course equivalents ── */
+    .conv-section {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid #e8e8ee;
+      text-align: left;
+    }
+    .conv-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-mid);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .conv-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 12px;
+      border-radius: 8px;
+      margin-bottom: 4px;
+    }
+    .conv-row.current { background: #eef4ff; }
+    .conv-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-mid);
+    }
+    .conv-row.current .conv-label { color: var(--blue-mid); }
+    .conv-time {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-dark);
+      font-variant-numeric: tabular-nums;
+    }
+    .conv-note {
+      font-size: 11px;
+      color: var(--text-mid);
+      font-style: italic;
+      text-align: center;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
     /* ── Footer ── */
     footer {
       text-align: center;
@@ -387,6 +433,11 @@
     <div class="points-word">points</div>
     <div class="level-badge" id="lvlBadge"></div>
     <div class="result-meta" id="resMeta"></div>
+    <div class="conv-section" id="convSection" style="display:none">
+      <div class="conv-title">Course Equivalents</div>
+      <div id="convRows"></div>
+      <p class="conv-note" id="convNote"></p>
+    </div>
   </div>
 
   <footer>
@@ -506,6 +557,16 @@ const STROKE_LABEL = {
   Fly:'Butterfly',  IM:'Individual Medley',
 };
 
+// SCM → SCY approximate factors (derived from world record ratios)
+// 400/800/1500 Free excluded — SCY uses 500y/1000y/1650y (different distances)
+const SCM_TO_SCY = {
+  '50 Free':    0.887, '100 Free':   0.890, '200 Free':   0.907,
+  '50 Back':    0.882, '100 Back':   0.893, '200 Back':   0.906,
+  '50 Breast':  0.885, '100 Breast': 0.891, '200 Breast': 0.905,
+  '50 Fly':     0.888, '100 Fly':    0.888, '200 Fly':    0.905,
+  '200 IM':     0.904, '400 IM':     0.907,
+};
+
 // ── App state ──────────────────────────────────
 const state = { gender:'M', course:'LCM', stroke:'Free', dist:'100' };
 
@@ -609,13 +670,59 @@ function calculate() {
     `Your time: <strong>${fmtTime(T)}</strong><br>` +
     `Base time (WR): ${fmtTime(B)}`;
 
+  showConversions(T, key);
+
   const card = document.getElementById('resultCard');
   card.classList.add('show');
   card.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
+function showConversions(T, key) {
+  const lcmBase = WR[state.gender]['LCM'][key];
+  const scmBase = WR[state.gender]['SCM'][key];
+
+  let lcmTime = null, scmTime = null;
+  if (state.course === 'LCM') {
+    lcmTime = T;
+    scmTime = (scmBase && lcmBase) ? T * (scmBase / lcmBase) : null;
+  } else {
+    scmTime = T;
+    lcmTime = (lcmBase && scmBase) ? T * (lcmBase / scmBase) : null;
+  }
+
+  const scyFactor = SCM_TO_SCY[key];
+  const scyTime   = (scyFactor && scmTime) ? scmTime * scyFactor : null;
+
+  const rows = [
+    { label: 'LCM (50 m)', time: lcmTime, current: state.course === 'LCM', approx: false },
+    { label: 'SCM (25 m)', time: scmTime, current: state.course === 'SCM', approx: false },
+    { label: 'SCY (25 y)', time: scyTime, current: false,                  approx: true  },
+  ];
+
+  document.getElementById('convRows').innerHTML = rows
+    .filter(r => r.time !== null)
+    .map(r =>
+      `<div class="conv-row${r.current ? ' current' : ''}">` +
+        `<span class="conv-label">${r.label}${r.current ? ' ✦' : ''}</span>` +
+        `<span class="conv-time">${fmtTime(r.time)}${r.approx ? ' ~' : ''}</span>` +
+      `</div>`
+    ).join('');
+
+  const noteEl = document.getElementById('convNote');
+  if (scyTime) {
+    noteEl.textContent = '✦ your entered time  ~ SCY is approximate  LCM/SCM are exact';
+  } else if (['400','800','1500'].includes(state.dist) && state.stroke === 'Free') {
+    noteEl.textContent = 'SCY freestyle uses different distances (500y / 1000y / 1650y) — no SCY equivalent shown.';
+  } else {
+    noteEl.textContent = '';
+  }
+
+  document.getElementById('convSection').style.display = 'block';
+}
+
 function clearResult() {
   document.getElementById('resultCard').classList.remove('show');
+  document.getElementById('convSection').style.display = 'none';
   document.getElementById('errMsg').textContent = '';
 }
 
